@@ -70,7 +70,7 @@ records, each with an `x` and a `y` coordinate stored as 32-bit floats:
   },
   "chunk_key_encoding": {"name": "default"},
   "fill_value": "AAAAAAAAAAA=",
-  "codecs": [{"name": "bytes"}]
+  "codecs": [{"name": "bytes", "configuration": {"endian": "little"}}]
 }
 ```
 
@@ -178,23 +178,18 @@ the `bytes` codec for compression.
 
 ### Endianness handling
 
-The `bytes` codec MUST be configured without an `endian` setting when used
-with `structured` arrays (i.e. `{"name": "bytes"}` with no `configuration`
-key). Implementations MUST NOT specify an `endian` configuration for the
-`bytes` codec when encoding or decoding structured data.
+When a structured type contains multi-byte numeric fields, the `bytes` codec
+MUST be configured with an explicit `endian` setting
+(e.g. `{"name": "bytes", "configuration": {"endian": "little"}}`). All
+multi-byte fields MUST use the byte order specified by the `endian` parameter.
 
-Each field's byte order is determined by the field's own data type and the
-implementation's native byte order. For maximum interoperability, all fields
-within a structured array SHOULD use the same byte order, and implementations
-SHOULD default to little-endian byte order for multi-byte numeric fields.
+Structured types composed entirely of single-byte fields (e.g. `uint8`,
+`int8`) have no byte-order ambiguity and MAY omit the `endian` configuration.
 
-> **Interoperability note:** The Zarr v3 core specification does not include
-> endianness in the data type identifier (e.g. `"float32"` rather than
-> `"<f4"` or `">f4"`). Implementations that need to guarantee cross-platform
-> compatibility should either:
-> - Use only single-byte field types (e.g. `uint8`, `int8`), or
-> - Explicitly document the byte order convention used, or
-> - Apply byte-swapping during encode/decode to ensure a canonical byte order.
+> **Legacy compatibility:** Arrays where the `bytes` codec has no `endian`
+> configuration (i.e. `{"name": "bytes"}` with no `configuration` key) SHOULD
+> be treated as little-endian by implementations. Implementations SHOULD warn
+> when `endian` is absent for structured types with multi-byte numeric fields.
 
 Variable-length codecs (e.g. `vlen-utf8`) are not compatible with the
 `structured` data type.
