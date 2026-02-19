@@ -3,7 +3,7 @@
   "title": "structured",
   "$defs": {
     "dtype": {
-      "description": "A Zarr v3 data type representation: a string for core data types, or an object with name and configuration for extension data types.",
+      "description": "A Zarr v3 data type representation whose encoded size is fixed and known. Variable-length types (e.g. 'string') are not permitted as field types.",
       "oneOf": [
         {
           "type": "string",

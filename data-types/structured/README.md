@@ -33,11 +33,14 @@ have exactly one key, `"fields"`, whose value is a JSON array of fields.
 Each field is a 2-element JSON array `[field_name, field_dtype]`, where:
 
 - `field_name` is a non-empty string that identifies the field.
-- `field_dtype` is a valid Zarr v3 data type representation:
+- `field_dtype` is a valid Zarr v3 data type representation whose size in
+  bytes is fixed and known at the time the array is opened:
   - For [core data types](https://zarr-specs.readthedocs.io/en/latest/v3/data-types/index.html#core-data-types),
     this MUST be a string (e.g. `"float32"`, `"int32"`, `"uint8"`).
   - For extension data types that require configuration (e.g. `numpy.datetime64`),
     this MUST be an object with a `"name"` key and a `"configuration"` key.
+  - Variable-length data types (e.g. `"string"`) MUST NOT be used as field
+    types, as they do not have a fixed encoded size.
 
 The `"fields"` array must contain at least one field. Field names must be
 unique within a given structured data type.
