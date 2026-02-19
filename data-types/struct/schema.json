@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "structured",
+  "title": "struct",
   "$defs": {
     "dtype": {
       "description": "A Zarr v3 data type representation whose encoded size is fixed and known. Variable-length types (e.g. 'string') are not permitted as field types.",
@@ -31,7 +31,7 @@
   "type": "object",
   "properties": {
     "name": {
-      "const": "structured"
+      "const": "struct"
     },
     "configuration": {
       "type": "object",
