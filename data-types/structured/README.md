@@ -71,7 +71,7 @@ records, each with an `x` and a `y` coordinate stored as 32-bit floats:
     "configuration": {"chunk_shape": [100]}
   },
   "chunk_key_encoding": {"name": "default"},
-  "fill_value": "AAAAAAAAAAA=",
+  "fill_value": {"x": 0.0, "y": 0.0},
   "codecs": [{"name": "bytes", "configuration": {"endian": "little"}}]
 }
 ```
@@ -160,25 +160,10 @@ with field byte offsets of 0, 4, and 5 respectively.
 
 ## Fill value representation
 
-The `fill_value` for arrays with the `structured` data type may be specified
-in one of two forms:
-
-### Base64 string form
-
-A string produced by applying [base64 encoding](https://en.wikipedia.org/wiki/Base64)
-to the raw binary representation of the fill scalar. The binary representation
-follows the packed field layout described above. The base64-encoded string must
-decode to exactly `item_size` bytes, where `item_size` is the total byte size
-of one element of the structured type.
-
-For example, the zero-valued scalar of the type `[("x", float32), ("y",
-float32)]` is encoded as `"AAAAAAAAAAA="` (8 zero bytes base64-encoded).
-
-### Named fields object form
-
-A JSON object mapping field names to their individual fill values. Each field's
-value must be a valid fill value for that field's data type. Fields omitted
-from the object are treated as zero-valued.
+The `fill_value` for arrays with the `structured` data type MUST be a JSON
+object mapping each field name to its fill value. Each field's value must be
+a valid fill value for that field's data type. Fields omitted from the object
+are treated as zero-valued.
 
 ```json
 "fill_value": {"x": 1.23, "y": 4.56}
@@ -191,9 +176,11 @@ nested field names to their fill values:
 "fill_value": {"point": {"x": 1.0, "y": 2.0}, "value": 3.14}
 ```
 
-Implementations MUST support the base64 string form. Implementations SHOULD
-support the named fields object form. When writing, implementations MAY choose
-either form; the base64 form is preferred for compactness.
+> **Legacy compatibility:** Existing arrays may encode the fill value as a
+> [base64](https://en.wikipedia.org/wiki/Base64)-encoded string of the raw
+> packed bytes (e.g. `"AAAAAAAAAAA="` for 8 zero bytes). Implementations
+> SHOULD support reading this form for backward compatibility, but MUST NOT
+> write it for new arrays.
 
 ## Codec compatibility
 
