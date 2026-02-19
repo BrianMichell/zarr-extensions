@@ -16,8 +16,7 @@ might store `(latitude: float64, longitude: float64, elevation: float32)` as a
 single structured array rather than three separate arrays.
 
 Each element of a structured array is a scalar of a fixed size in bytes. The
-size is the sum of the sizes of all fields. Fields are stored contiguously in
-memory in the order they are declared, with no padding bytes between fields.
+size is the sum of the sizes of all fields.
 
 ## Data type representation
 
@@ -145,19 +144,19 @@ sub-fields, plus a scalar `value` field:
 }
 ```
 
-## Binary layout
+## Bytes codec encoding
 
-The binary encoding of a single structured scalar is the packed concatenation
-of the binary encodings of each field's value, in field declaration order. No
-padding bytes are inserted between fields, regardless of alignment
-considerations.
+When the `bytes` codec is used (as required), each structured scalar is encoded
+as the packed concatenation of the encoded bytes of each field's value, in
+field declaration order. No padding bytes are inserted between fields,
+regardless of alignment considerations.
 
-The total size of a structured scalar in bytes is the sum of the sizes of all
-fields.
+The total encoded size of a structured scalar in bytes is the sum of the
+encoded sizes of all fields.
 
 As a concrete example, the structured type `[("id", int32), ("flags", uint8),
-("value", float64)]` has an element size of 4 + 1 + 8 = 13 bytes, with field
-offsets of 0, 4, and 5 respectively.
+("value", float64)]` has an encoded element size of 4 + 1 + 8 = 13 bytes,
+with field byte offsets of 0, 4, and 5 respectively.
 
 ## Fill value representation
 
@@ -232,7 +231,7 @@ Variable-length codecs (e.g. `vlen-utf8`) are not compatible with the
 > Implementations MUST reject structured types with duplicate field names.
 
 > **Note:** The order of fields in the `"fields"` array is significant and
-> MUST be preserved. Fields are stored in memory in declaration order.
+> MUST be preserved. Fields are encoded in declaration order.
 
 ## Change log
 
