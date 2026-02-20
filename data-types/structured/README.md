@@ -161,9 +161,16 @@ with field byte offsets of 0, 4, and 5 respectively.
 ## Fill value representation
 
 The `fill_value` for arrays with the `structured` data type MUST be a JSON
-object mapping each field name to its fill value. Each field's value must be
-a valid fill value for that field's data type. Fields omitted from the object
-are treated as zero-valued.
+object mapping each field name to its fill value. Every field defined in the
+`structured` type MUST have a corresponding entry in the fill value object.
+Each field's value must be a valid fill value for that field's data type.
+
+> **Note:** Explicit fill values are required for all fields because implicit
+> defaults (such as "zero") are ambiguous for extension data types. For
+> example, a NumPy `datetime64` initialized with zero represents the Unix
+> epoch, whereas a C++ datetime implementation might default to a null or
+> invalid state. Requiring explicit fill values ensures consistent behavior
+> across implementations and future extensions.
 
 ```json
 "fill_value": {"x": 1.23, "y": 4.56}
