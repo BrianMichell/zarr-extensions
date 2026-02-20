@@ -26,13 +26,15 @@ The name of this data type is the string `"structured"`.
 
 ### Configuration
 
-This data type requires a configuration object. The configuration object must
-have exactly one key, `"fields"`, whose value is a JSON array of fields.
+This data type requires a configuration object. The configuration object MUST
+contain a `"fields"` key whose value is a JSON array of fields.
 
-Each field is a 2-element JSON array `[field_name, field_dtype]`, where:
+Each field MUST be a 2-element JSON array `[field_name, field_dtype]`, where:
 
-- `field_name` is a non-empty string that identifies the field.
-- `field_dtype` is a valid Zarr v3 data type representation whose size in
+- `field_name` MUST be a non-empty string that identifies the field. Field names
+  MUST be unique within the same `structured` data type; nested `structured`
+  types have independent namespaces.
+- `field_dtype` MUST be a valid Zarr v3 data type representation whose size in
   bytes is fixed and known at the time the array is opened:
   - For [core data types](https://zarr-specs.readthedocs.io/en/latest/v3/data-types/index.html#core-data-types),
     this MUST be a string (e.g. `"float32"`, `"int32"`, `"uint8"`).
@@ -41,10 +43,9 @@ Each field is a 2-element JSON array `[field_name, field_dtype]`, where:
   - Variable-length data types (e.g. `"string"`) MUST NOT be used as field
     types, as they do not have a fixed encoded size.
 
-The `"fields"` array must contain at least one field. Field names must be
-unique within a given `structured` data type.
+The `"fields"` array MUST contain at least one field.
 
-The `structured` data type may be used recursively: a field's data type may
+The `structured` data type MAY be used recursively: a field's data type MAY
 itself be `"structured"`, enabling nested record types.
 
 ### Examples
@@ -76,71 +77,51 @@ records, each with an `x` and a `y` coordinate stored as 32-bit floats:
 }
 ```
 
-The following is an example with heterogeneous field types: a 32-bit integer
-identifier, a single byte of bit flags, and a 64-bit floating-point value:
+The remaining examples show only the `configuration` object for brevity.
+
+The following shows a field using a parametrized data type. The `timestamp`
+field uses [`numpy.datetime64`](../numpy.datetime64/README.md), which requires
+a `configuration` object specifying `unit` and `scale_factor`:
 
 ```json
 {
-  "name": "structured",
-  "configuration": {
-    "fields": [
-      ["id",    "int32"],
-      ["flags", "uint8"],
-      ["value", "float64"]
-    ]
-  }
+  "fields": [
+    [
+      "timestamp",
+      {
+        "name": "numpy.datetime64",
+        "configuration": {
+          "unit": "s",
+          "scale_factor": 1
+        }
+      }
+    ],
+    ["value", "float32"]
+  ]
 }
 ```
 
-The following is an example where one field uses a parametrized data type.
-The `timestamp` field uses [`numpy.datetime64`](../numpy.datetime64/README.md),
-which requires a `configuration` object specifying `unit` and `scale_factor`:
+The following shows a nested structured field. The outer record has a `point`
+field that is itself a structured type with `x` and `y` sub-fields, plus a
+scalar `value` field:
 
 ```json
 {
-  "name": "structured",
-  "configuration": {
-    "fields": [
-      [
-        "timestamp",
-        {
-          "name": "numpy.datetime64",
-          "configuration": {
-            "unit": "s",
-            "scale_factor": 1
-          }
+  "fields": [
+    [
+      "point",
+      {
+        "name": "structured",
+        "configuration": {
+          "fields": [
+            ["x", "float32"],
+            ["y", "float32"]
+          ]
         }
-      ],
-      ["value", "float32"]
-    ]
-  }
-}
-```
-
-The following is an example with a nested structured field. The outer record
-has a `point` field that is itself a structured type with `x` and `y`
-sub-fields, plus a scalar `value` field:
-
-```json
-{
-  "name": "structured",
-  "configuration": {
-    "fields": [
-      [
-        "point",
-        {
-          "name": "structured",
-          "configuration": {
-            "fields": [
-              ["x", "float32"],
-              ["y", "float32"]
-            ]
-          }
-        }
-      ],
-      ["value", "float64"]
-    ]
-  }
+      }
+    ],
+    ["value", "float64"]
+  ]
 }
 ```
 
@@ -163,7 +144,7 @@ with field byte offsets of 0, 4, and 5 respectively.
 The `fill_value` for arrays with the `structured` data type MUST be a JSON
 object mapping each field name to its fill value. Every field defined in the
 `structured` type MUST have a corresponding entry in the fill value object.
-Each field's value must be a valid fill value for that field's data type.
+Each field's value MUST be a valid fill value for that field's data type.
 
 > **Note:** Explicit fill values are required for all fields because implicit
 > defaults (such as "zero") are ambiguous for extension data types. For
