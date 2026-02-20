@@ -132,12 +132,66 @@ as the packed concatenation of the encoded bytes of each field's value, in
 field declaration order. No padding bytes are inserted between fields,
 regardless of alignment considerations.
 
+For nested structured types, encoding proceeds depth-first: each field is
+encoded completely before the next sibling field. A nested structured field
+is encoded as the packed concatenation of its own sub-fields, recursively.
+
 The total encoded size of a structured scalar in bytes is the sum of the
 encoded sizes of all fields.
 
-As a concrete example, the structured type `[("id", int32), ("flags", uint8),
-("value", float64)]` has an encoded element size of 4 + 1 + 8 = 13 bytes,
-with field byte offsets of 0, 4, and 5 respectively.
+As a concrete example, consider the following structured type:
+
+```json
+{
+  "fields": [
+    ["id",    "int32"],
+    ["flags", "uint8"],
+    ["value", "float64"]
+  ]
+}
+```
+
+The encoded byte layout is:
+
+```
+ byte:  0   1   2   3   4   5   6   7   8   9  10  11  12
+      ├───────────────┼───┼───────────────────────────────┤
+field:│      id       │ f │            value              │
+      │   (int32)     │   │          (float64)            │
+      └───────────────┴───┴───────────────────────────────┘
+```
+
+The total encoded size is 4 + 1 + 8 = 13 bytes, with field byte offsets of
+0, 4, and 5 respectively.
+
+For nested structured types, the same principle applies recursively. Consider:
+
+```json
+{
+  "fields": [
+    ["point", {
+      "name": "structured",
+      "configuration": {
+        "fields": [["x", "float32"], ["y", "float32"]]
+      }
+    }],
+    ["value", "float64"]
+  ]
+}
+```
+
+The nested `point` field is encoded completely (all sub-fields) before `value`:
+
+```
+ byte:  0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15
+      ├───────────────┼───────────────┼───────────────────────────────┤
+field:│    point.x    │    point.y    │            value              │
+      │   (float32)   │   (float32)   │          (float64)            │
+      └───────────────┴───────────────┴───────────────────────────────┘
+```
+
+The total encoded size is (4 + 4) + 8 = 16 bytes, with `point` at offset 0
+(containing `x` at 0, `y` at 4) and `value` at offset 8.
 
 ## Fill value representation
 
