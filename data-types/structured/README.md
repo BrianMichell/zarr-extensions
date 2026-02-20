@@ -1,10 +1,10 @@
-# Struct data type
+# Structured data type
 
-This document defines `struct`, a data type for arrays whose elements are
+This document defines `structured`, a data type for arrays whose elements are
 fixed-size records composed of named, typed fields — commonly referred to as
 "structured arrays" or "record arrays".
 
-The `struct` data type closely models NumPy's
+The `structured` data type closely models NumPy's
 [structured arrays](https://numpy.org/doc/stable/user/basics.rec.html), where
 each element consists of multiple named fields, each with its own data type.
 
@@ -22,7 +22,7 @@ size is the sum of the sizes of all fields.
 
 ### Name
 
-The name of this data type is the string `"struct"`.
+The name of this data type is the string `"structured"`.
 
 ### Configuration
 
@@ -42,10 +42,10 @@ Each field is a 2-element JSON array `[field_name, field_dtype]`, where:
     types, as they do not have a fixed encoded size.
 
 The `"fields"` array must contain at least one field. Field names must be
-unique within a given `struct` data type.
+unique within a given `structured` data type.
 
-The `struct` data type may be used recursively: a field's data type may
-itself be `"struct"`, enabling nested record types.
+The `structured` data type may be used recursively: a field's data type may
+itself be `"structured"`, enabling nested record types.
 
 ### Examples
 
@@ -58,7 +58,7 @@ records, each with an `x` and a `y` coordinate stored as 32-bit floats:
   "node_type": "array",
   "shape": [100],
   "data_type": {
-    "name": "struct",
+    "name": "structured",
     "configuration": {
       "fields": [
         ["x", "float32"],
@@ -81,7 +81,7 @@ identifier, a single byte of bit flags, and a 64-bit floating-point value:
 
 ```json
 {
-  "name": "struct",
+  "name": "structured",
   "configuration": {
     "fields": [
       ["id",    "int32"],
@@ -98,7 +98,7 @@ which requires a `configuration` object specifying `unit` and `scale_factor`:
 
 ```json
 {
-  "name": "struct",
+  "name": "structured",
   "configuration": {
     "fields": [
       [
@@ -123,13 +123,13 @@ sub-fields, plus a scalar `value` field:
 
 ```json
 {
-  "name": "struct",
+  "name": "structured",
   "configuration": {
     "fields": [
       [
         "point",
         {
-          "name": "struct",
+          "name": "structured",
           "configuration": {
             "fields": [
               ["x", "float32"],
@@ -160,7 +160,7 @@ with field byte offsets of 0, 4, and 5 respectively.
 
 ## Fill value representation
 
-The `fill_value` for arrays with the `struct` data type MUST be a JSON
+The `fill_value` for arrays with the `structured` data type MUST be a JSON
 object mapping each field name to its fill value. Each field's value must be
 a valid fill value for that field's data type. Fields omitted from the object
 are treated as zero-valued.
@@ -205,7 +205,7 @@ Structured types composed entirely of single-byte fields (e.g. `uint8`,
 > when `endian` is absent for structured types with multi-byte numeric fields.
 
 Variable-length codecs (e.g. `vlen-utf8`) are not compatible with the
-`struct` data type.
+`structured` data type.
 
 ## Notes
 
@@ -214,8 +214,8 @@ Variable-length codecs (e.g. `vlen-utf8`) are not compatible with the
 > structured dtype layout (created with `align=True`), which inserts padding
 > for memory alignment, is NOT supported by this specification.
 
-> **Note:** Field names MUST be unique within a `struct` data type.
-> Implementations MUST reject `struct` types with duplicate field names.
+> **Note:** Field names MUST be unique within a `structured` data type.
+> Implementations MUST reject `structured` types with duplicate field names.
 
 > **Note:** The order of fields in the `"fields"` array is significant and
 > MUST be preserved. Fields are encoded in declaration order.
